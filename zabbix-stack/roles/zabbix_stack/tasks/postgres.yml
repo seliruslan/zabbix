@@ -1,6 +1,4 @@
 ---
-# roles/zabbix_stack/tasks/postgres.yml
-
 - name: Install PostgreSQL server & client
   ansible.builtin.apt:
     name:
@@ -17,18 +15,14 @@
 
 - name: Create Zabbix DB user (if not exists)
   ansible.builtin.shell: |
-    psql -tAc "SELECT 1 FROM pg_roles WHERE rolname='{{ zbx_db_user }}'" | grep -q 1 || \
-    psql -c "CREATE USER {{ zbx_db_user }} WITH PASSWORD '{{ zbx_db_password }}';"
+    sudo -u postgres psql -tAc "SELECT 1 FROM pg_roles WHERE rolname='{{ zbx_db_user }}'" | grep -q 1 || \
+    sudo -u postgres psql -c "CREATE USER {{ zbx_db_user }} WITH PASSWORD '{{ zbx_db_password }}';"
   args:
     executable: /bin/bash
-  become: true
-  become_user: postgres
 
 - name: Create Zabbix database (if not exists)
   ansible.builtin.shell: |
-    psql -lqt | cut -d \| -f 1 | grep -qw {{ zbx_db_name }} || \
-    createdb -O {{ zbx_db_user }} {{ zbx_db_name }}
+    sudo -u postgres psql -lqt | cut -d \| -f 1 | grep -qw {{ zbx_db_name }} || \
+    sudo -u postgres createdb -O {{ zbx_db_user }} {{ zbx_db_name }}
   args:
     executable: /bin/bash
-  become: true
-  become_user: postgres
