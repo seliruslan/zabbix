@@ -1,0 +1,8 @@
+- name: Provision Zabbix + PostgreSQL + Grafana
+  hosts: zabbix
+  become: true
+  gather_facts: true
+
+
+  roles:
+    - role: zabbix_stack

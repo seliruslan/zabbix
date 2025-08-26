@@ -1,0 +1,33 @@
+# Global vars for the stack
+zabbix_version: "7.0" # 7.0 LTS (adjust if needed)
+pg_version: "16" # Ubuntu 22.04 default; 24.04 uses 16. Role auto-detects if not present
+
+
+# DB
+zbx_db_name: zabbix
+zbx_db_user: zabbix
+zbx_db_password: "ChangeMe_Strong!"
+
+
+# Timezone for PHP/Zabbix UI
+php_timezone: "Europe/Kyiv"
+
+
+# Nginx
+zabbix_server_name: "zabbix.local" # set to your domain or leave default
+zabbix_listen_port: 80 # change to 443 if you terminate TLS here
+
+
+# Grafana
+grafana_admin_user: admin
+grafana_admin_password: "ChangeMe_Also!"
+# If you have a reverse-proxy/TLS, set the grafana_url accordingly (without trailing slash)
+grafana_url: "http://localhost:3000"
+# By default we install the official Zabbix Grafana plugin
+zabbix_grafana_plugin_id: "alexanderzobnin-zabbix-datasource"
+
+
+# Zabbix API (used by Grafana datasource)
+zabbix_api_url: "http://localhost/zabbix/api_jsonrpc.php"
+zabbix_default_user: "Admin"
+zabbix_default_password: "zabbix"

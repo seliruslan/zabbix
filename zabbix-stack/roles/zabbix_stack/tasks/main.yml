@@ -1,0 +1,30 @@
+---
+- name: Ensure base packages
+  ansible.builtin.apt:
+    name:
+      - apt-transport-https
+      - ca-certificates
+      - gnupg
+      - lsb-release
+      - software-properties-common
+      - unzip
+      - curl
+      - wget
+    state: present
+    update_cache: true
+
+
+- name: Include PostgreSQL tasks
+  ansible.builtin.include_tasks: postgres.yml
+
+
+- name: Include Nginx + PHP tasks
+  ansible.builtin.include_tasks: nginx_php.yml
+
+
+- name: Include Zabbix tasks
+  ansible.builtin.include_tasks: zabbix.yml
+
+
+- name: Include Grafana tasks
+  ansible.builtin.include_tasks: grafana.yml

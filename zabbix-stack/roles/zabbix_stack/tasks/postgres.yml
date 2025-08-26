@@ -1,0 +1,35 @@
+---
+- name: Install PostgreSQL server & client
+  ansible.builtin.apt:
+    name:
+      - postgresql
+      - postgresql-contrib
+      - python3-psycopg2
+    state: present
+    update_cache: true
+
+
+- name: Ensure PostgreSQL is running
+  ansible.builtin.service:
+    name: postgresql
+    state: started
+    enabled: true
+
+
+- name: Create Zabbix DB user
+  community.postgresql.postgresql_user:
+    name: "{{ zbx_db_user }}"
+    password: "{{ zbx_db_password }}"
+    encrypted: true
+  become_user: postgres
+
+
+- name: Create Zabbix database
+  community.postgresql.postgresql_db:
+    name: "{{ zbx_db_name }}"
+    owner: "{{ zbx_db_user }}"
+    encoding: UTF8
+    lc_collate: "en_US.UTF-8"
+    lc_ctype: "en_US.UTF-8"
+    template: template0
+  become_user: postgres

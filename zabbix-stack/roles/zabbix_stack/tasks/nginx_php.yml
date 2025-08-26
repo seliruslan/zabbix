@@ -1,0 +1,60 @@
+---
+- name: Install PHP-FPM and modules (Ubuntu 22.04/24.04)
+  ansible.builtin.apt:
+    name:
+      - php-fpm
+      - php-cli
+      - php-pgsql
+      - php-ldap
+      - php-json
+      - php-xml
+      - php-bcmath
+      - php-mbstring
+      - php-gd
+      - php-zip
+    state: present
+
+
+- name: Install Nginx
+  ansible.builtin.apt:
+    name: nginx
+    state: present
+
+
+- name: Configure PHP timezone for CLI
+  ansible.builtin.lineinfile:
+    path: "/etc/php/*/cli/php.ini"
+    regexp: '^;?date.timezone ='
+    line: "date.timezone = {{ php_timezone }}"
+    backrefs: false
+  notify: restart php-fpm
+
+
+- name: Configure PHP timezone for FPM
+  ansible.builtin.lineinfile:
+    path: "/etc/php/*/fpm/php.ini"
+    regexp: '^;?date.timezone ='
+    line: "date.timezone = {{ php_timezone }}"
+    backrefs: false
+  notify: restart php-fpm
+
+
+- name: Deploy Nginx vhost for Zabbix
+  ansible.builtin.template:
+    src: nginx-zabbix.conf.j2
+    dest: /etc/nginx/sites-available/zabbix.conf
+    mode: '0644'
+
+
+- name: Enable Nginx site
+  ansible.builtin.file:
+    src: /etc/nginx/sites-available/zabbix.conf
+    dest: /etc/nginx/sites-enabled/zabbix.conf
+    state: link
+
+
+- name: Remove default Nginx site if present
+  ansible.builtin.file:
+    path: /etc/nginx/sites-enabled/default
+    state: absent
+  notify: restart nginx

@@ -1,0 +1,26 @@
+server {
+    listen {{ zabbix_listen_port }} default_server;
+    server_name {{ zabbix_server_name }};
+
+    root /usr/share/zabbix;
+
+    index index.php index.html index.htm;
+
+    location / {
+        try_files $uri $uri/ =404;
+    }
+
+    location ~ \.php$ {
+        include snippets/fastcgi-php.conf;
+        fastcgi_pass unix:/run/php/php-fpm.sock;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        include fastcgi_params;
+    }
+
+    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg)$ {
+        expires 30d;
+        access_log off;
+    }
+
+    include /etc/zabbix/nginx.conf;
+}

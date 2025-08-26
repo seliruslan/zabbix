@@ -1,0 +1,67 @@
+---
+- name: Add Zabbix repository GPG key
+  ansible.builtin.get_url:
+    url: "https://repo.zabbix.com/zabbix-official-repo.key"
+    dest: /usr/share/keyrings/zabbix.gpg
+    mode: '0644'
+
+- name: Add Zabbix APT repository (Ubuntu)
+  ansible.builtin.apt_repository:
+    repo: "deb [signed-by=/usr/share/keyrings/zabbix.gpg] https://repo.zabbix.com/zabbix/{{ zabbix_version }}/ubuntu {{ ansible_distribution_release }} main"
+    state: present
+
+- name: Install Zabbix server (PostgreSQL), frontend, agent2
+  ansible.builtin.apt:
+    name:
+      - zabbix-server-pgsql
+      - zabbix-frontend-php
+      - zabbix-sql-scripts
+      - zabbix-nginx-conf
+      - zabbix-agent2
+    update_cache: true
+    state: present
+
+- name: Import initial schema
+  ansible.builtin.shell: |
+    set -o pipefail
+    zcat /usr/share/zabbix-sql-scripts/postgresql/server.sql.gz | sudo -u postgres psql {{ zbx_db_name }}
+  args:
+    executable: /bin/bash
+    creates: /var/lib/postgresql/.zbx_schema_loaded
+  register: import_schema
+  changed_when: import_schema.rc == 0
+
+- name: Mark schema imported
+  ansible.builtin.file:
+    path: /var/lib/postgresql/.zbx_schema_loaded
+    state: touch
+  when: import_schema is changed
+
+- name: Configure zabbix_server.conf
+  ansible.builtin.template:
+    src: zabbix_server.conf.j2
+    dest: /etc/zabbix/zabbix_server.conf
+    mode: '0644'
+  notify: restart zabbix-server
+
+- name: Enable and start Zabbix services
+  ansible.builtin.service:
+    name: "{{ item }}"
+    state: started
+    enabled: true
+  loop:
+    - zabbix-server
+    - zabbix-agent2
+
+- name: Ensure Zabbix frontend Nginx snippet has correct server_name and listen
+  ansible.builtin.lineinfile:
+    path: /etc/zabbix/nginx.conf
+    regexp: '^\s*#?\s*listen '
+    line: " listen {{ zabbix_listen_port }};"
+
+- name: Ensure Zabbix frontend Nginx snippet has correct server_name
+  ansible.builtin.lineinfile:
+    path: /etc/zabbix/nginx.conf
+    regexp: '^\s*#?\s*server_name '
+    line: " server_name {{ zabbix_server_name }};"
+  notify: restart

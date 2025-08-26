@@ -1,0 +1,43 @@
+---
+- name: Add Grafana GPG key
+  ansible.builtin.get_url:
+    url: https://packages.grafana.com/gpg.key
+    dest: /usr/share/keyrings/grafana.gpg
+    mode: '0644'
+
+- name: Add Grafana APT repository
+  ansible.builtin.apt_repository:
+    repo: "deb [signed-by=/usr/share/keyrings/grafana.gpg] https://packages.grafana.com/oss/deb stable main"
+    state: present
+
+- name: Install Grafana
+  ansible.builtin.apt:
+    name: grafana
+    update_cache: true
+    state: present
+
+- name: Enable and start Grafana
+  ansible.builtin.service:
+    name: grafana-server
+    state: started
+    enabled: true
+
+- name: Install Zabbix plugin for Grafana
+  ansible.builtin.command: grafana-cli plugins install {{ zabbix_grafana_plugin_id }}
+  args:
+    creates: "/var/lib/grafana/plugins/{{ zabbix_grafana_plugin_id }}"
+  notify: restart grafana-server
+
+# Optional: Provision datasource via file (no API token needed)
+- name: Create provisioning directory for datasources
+  ansible.builtin.file:
+    path: /etc/grafana/provisioning/datasources
+    state: directory
+    mode: '0755'
+
+- name: Deploy Zabbix datasource provisioning
+  ansible.builtin.template:
+    src: ../../../files/grafana-provisioning/datasources/zabbix.yml.j2
+    dest: /etc/grafana/provisioning/datasources/zabbix.yml
+    mode: '0644'
+  notify: restart grafana-server
