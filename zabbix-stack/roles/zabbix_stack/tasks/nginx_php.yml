@@ -25,7 +25,7 @@
 
 - name: Configure PHP timezone for CLI
   ansible.builtin.lineinfile:
-    path: "/etc/php/*/cli/php.ini"
+    path: "/etc/php/{{ php_version }}/cli/php.ini"
     regexp: '^;?date.timezone ='
     line: "date.timezone = {{ php_timezone }}"
     backrefs: false
@@ -34,7 +34,7 @@
 
 - name: Configure PHP timezone for FPM
   ansible.builtin.lineinfile:
-    path: "/etc/php/*/fpm/php.ini"
+    path: "/etc/php/{{ php_version }}/cli/php.ini"
     regexp: '^;?date.timezone ='
     line: "date.timezone = {{ php_timezone }}"
     backrefs: false
