@@ -2,6 +2,7 @@
 - name: Install PHP-FPM and modules (Ubuntu 22.04/24.04)
   ansible.builtin.apt:
     name:
+      - php
       - php-fpm
       - php-cli
       - php-pgsql
@@ -13,6 +14,7 @@
       - php-gd
       - php-zip
     state: present
+    update_cache: true
 
 
 - name: Install Nginx

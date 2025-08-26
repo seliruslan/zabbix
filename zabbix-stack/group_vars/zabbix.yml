@@ -11,7 +11,7 @@ zbx_db_password: "ChangeMe_Strong!"
 
 # Timezone for PHP/Zabbix UI
 php_timezone: "Europe/Kyiv"
-
+php_version: "8.2"
 
 # Nginx
 zabbix_server_name: "zabbix.local" # set to your domain or leave default
