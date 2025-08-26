@@ -1,13 +1,13 @@
 ---
+# roles/zabbix_stack/tasks/postgres.yml
+
 - name: Install PostgreSQL server & client
   ansible.builtin.apt:
     name:
       - postgresql
       - postgresql-contrib
-      - python3-psycopg2
     state: present
     update_cache: true
-
 
 - name: Ensure PostgreSQL is running
   ansible.builtin.service:
@@ -15,21 +15,20 @@
     state: started
     enabled: true
 
-
-- name: Create Zabbix DB user
-  community.postgresql.postgresql_user:
-    name: "{{ zbx_db_user }}"
-    password: "{{ zbx_db_password }}"
-    encrypted: true
+- name: Create Zabbix DB user (if not exists)
+  ansible.builtin.shell: |
+    psql -tAc "SELECT 1 FROM pg_roles WHERE rolname='{{ zbx_db_user }}'" | grep -q 1 || \
+    psql -c "CREATE USER {{ zbx_db_user }} WITH PASSWORD '{{ zbx_db_password }}';"
+  args:
+    executable: /bin/bash
+  become: true
   become_user: postgres
 
-
-- name: Create Zabbix database
-  community.postgresql.postgresql_db:
-    name: "{{ zbx_db_name }}"
-    owner: "{{ zbx_db_user }}"
-    encoding: UTF8
-    lc_collate: "en_US.UTF-8"
-    lc_ctype: "en_US.UTF-8"
-    template: template0
+- name: Create Zabbix database (if not exists)
+  ansible.builtin.shell: |
+    psql -lqt | cut -d \| -f 1 | grep -qw {{ zbx_db_name }} || \
+    createdb -O {{ zbx_db_user }} {{ zbx_db_name }}
+  args:
+    executable: /bin/bash
+  become: true
   become_user: postgres
