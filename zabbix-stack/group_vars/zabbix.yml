@@ -24,7 +24,7 @@ grafana_admin_password: "ChangeMe_Also!"
 # If you have a reverse-proxy/TLS, set the grafana_url accordingly (without trailing slash)
 grafana_url: "http://localhost:3000"
 # By default we install the official Zabbix Grafana plugin
-zabbix_grafana_plugin_id: "alexanderzobnin-zabbix-datasource"
+zabbix_grafana_plugin_id: "alexanderzobnin-zabbix-app"
 
 
 # Zabbix API (used by Grafana datasource)
