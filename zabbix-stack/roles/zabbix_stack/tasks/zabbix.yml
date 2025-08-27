@@ -64,4 +64,4 @@
     path: /etc/zabbix/nginx.conf
     regexp: '^\s*#?\s*server_name '
     line: " server_name {{ zabbix_server_name }};"
-  notify: restart
+  notify: restart nginx
