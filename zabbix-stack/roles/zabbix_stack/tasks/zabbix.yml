@@ -1,14 +1,14 @@
 ---
-- name: Add Zabbix repository GPG key
-  ansible.builtin.get_url:
-    url: "https://repo.zabbix.com/zabbix-official-repo.key"
-    dest: /usr/share/keyrings/zabbix.gpg
-    mode: '0644'
-
-- name: Add Zabbix APT repository (Ubuntu)
-  ansible.builtin.apt_repository:
-    repo: "deb [signed-by=/usr/share/keyrings/zabbix.gpg] https://repo.zabbix.com/zabbix/{{ zabbix_version }}/ubuntu {{ ansible_distribution_release }} main"
+- name: Add Zabbix GPG key
+  ansible.builtin.apt_key:
+    url: https://repo.zabbix.com/zabbix-official-repo.key
     state: present
+
+- name: Add Zabbix APT repository (Ubuntu Noble)
+  ansible.builtin.apt_repository:
+    repo: "deb [arch=amd64] https://repo.zabbix.com/zabbix/7.0/ubuntu noble main"
+    state: present
+    filename: 'zabbix'
 
 - name: Install Zabbix server (PostgreSQL), frontend, agent2
   ansible.builtin.apt:
